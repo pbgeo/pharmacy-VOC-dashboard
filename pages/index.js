@@ -141,6 +141,8 @@ function Bars({ data, colorMap, defaultColor }) {
 }
 
 function PendingTable({ records }) {
+  const [openIdx, setOpenIdx] = useState(null);
+
   const rows = records
     .filter(r => r.진행상황 !== "완료")
     .sort((a, b) => {
@@ -155,52 +157,111 @@ function PendingTable({ records }) {
     </div>
   );
 
-  const COL_W = { "우선순위":"58px", "문의일자":"82px", "문의유형":"88px", "문의내용":"22%", "처리내용":"22%", "문의약사":"72px", "채널":"72px", "진행상황":"72px" };
-  const TH = ({ c }) => (
+  const TH = ({ c, w }) => (
     <th style={{ textAlign:"left", padding:"7px 10px", color:"#57606a", fontWeight:500,
-      fontSize:11, borderBottom:"1px solid #d0d7de", whiteSpace:"nowrap", width:COL_W[c] }}>{c}</th>
+      fontSize:11, borderBottom:"1px solid #d0d7de", whiteSpace:"nowrap", width:w }}>{c}</th>
   );
 
   return (
     <div style={{ overflowX:"auto" }}>
       <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, tableLayout:"fixed" }}>
-        <thead><tr>{["우선순위","문의일자","문의유형","문의내용","처리내용","문의약사","채널","진행상황"].map(c=><TH key={c} c={c}/>)}</tr></thead>
+        <thead>
+          <tr>
+            <TH c="" w="32px"/>
+            <TH c="우선순위" w="62px"/>
+            <TH c="문의일자" w="82px"/>
+            <TH c="문의유형" w="90px"/>
+            <TH c="문의업체" w="80px"/>
+            <TH c="제품명"/>
+            <TH c="문의약사" w="72px"/>
+            <TH c="채널" w="64px"/>
+            <TH c="진행상황" w="72px"/>
+          </tr>
+        </thead>
         <tbody>
           {rows.map((r, i) => {
-            const st  = r.진행상황 || "-";
+            const st   = r.진행상황 || "-";
             const sCfg = STATUS_CFG[st] || { bg:"#eaeef2", text:"#57606a" };
             const ty   = r.문의유형  || "-";
             const tc   = TYPE_CFG[ty] || "#57606a";
             const pc   = PRI_CFG[r.우선순위] || "#57606a";
+            const isOpen = openIdx === i;
             return (
-              <tr key={i} style={{ borderBottom:"1px solid #eaeef2" }}>
-                <td style={{ padding:"8px 10px", whiteSpace:"nowrap" }}>
-                  <span style={{ color:pc, fontWeight:600 }}>{r.우선순위||"-"}</span>
-                </td>
-                <td style={{ padding:"8px 10px", color:"#57606a", whiteSpace:"nowrap" }}>
-                  {r.문의일자?.substring(0,10)||"-"}
-                </td>
-                <td style={{ padding:"8px 10px", whiteSpace:"nowrap" }}>
-                  <span style={{ padding:"2px 7px", borderRadius:4, fontSize:11,
-                    background:`${tc}22`, color:tc }}>{ty}</span>
-                </td>
-                <td style={{ padding:"8px 10px", color:"#1f2328", wordBreak:"keep-all", lineHeight:1.5 }}>
-                  {r.문의내용||"-"}
-                </td>
-                <td style={{ padding:"8px 10px", color:"#1f2328", wordBreak:"keep-all", lineHeight:1.5 }}>
-                  {r.처리내용||"-"}
-                </td>
-                <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11, whiteSpace:"nowrap" }}>
-                  {(r.문의약사||[]).join(", ")||"-"}
-                </td>
-                <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11, whiteSpace:"nowrap" }}>
-                  {(r.문의채널||[]).join(", ")||"-"}
-                </td>
-                <td style={{ padding:"8px 10px" }}>
-                  <span style={{ padding:"2px 8px", borderRadius:20, fontSize:11,
-                    fontWeight:500, background:sCfg.bg, color:sCfg.text }}>{st}</span>
-                </td>
-              </tr>
+              <>
+                <tr key={`row-${i}`}
+                  onClick={() => setOpenIdx(isOpen ? null : i)}
+                  style={{ borderBottom: isOpen ? "none" : "1px solid #eaeef2",
+                    cursor:"pointer", background: isOpen ? "#f6f8fa" : "transparent" }}>
+                  <td style={{ padding:"8px 10px", textAlign:"center", color:"#57606a" }}>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                      style={{ transition:"transform 0.15s",
+                        transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                        display:"inline-block" }}>
+                      <path d="M4 2l4 4-4 4" stroke="#57606a" strokeWidth="1.5"
+                        strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </td>
+                  <td style={{ padding:"8px 10px", whiteSpace:"nowrap" }}>
+                    <span style={{ color:pc, fontWeight:600 }}>{r.우선순위||"-"}</span>
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", whiteSpace:"nowrap" }}>
+                    {r.문의일자?.substring(0,10)||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px", whiteSpace:"nowrap" }}>
+                    <span style={{ padding:"2px 7px", borderRadius:4, fontSize:11,
+                      background:`${tc}22`, color:tc }}>{ty}</span>
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11,
+                    overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                    {r.문의업체||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11,
+                    overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                    {r.제품명||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11, whiteSpace:"nowrap" }}>
+                    {(r.문의약사||[]).join(", ")||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11, whiteSpace:"nowrap" }}>
+                    {(r.문의채널||[]).join(", ")||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px" }}>
+                    <span style={{ padding:"2px 8px", borderRadius:20, fontSize:11,
+                      fontWeight:500, background:sCfg.bg, color:sCfg.text }}>{st}</span>
+                  </td>
+                </tr>
+                {isOpen && (
+                  <tr key={`detail-${i}`} style={{ borderBottom:"1px solid #eaeef2" }}>
+                    <td colSpan={9} style={{ padding:0 }}>
+                      <div style={{ padding:"12px 14px 14px 42px",
+                        background:"#f6f8fa", borderTop:"1px solid #eaeef2" }}>
+                        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                          <div>
+                            <div style={{ fontSize:11, fontWeight:600, color:"#57606a",
+                              textTransform:"uppercase", letterSpacing:"0.4px", marginBottom:5 }}>
+                              문의내용
+                            </div>
+                            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6,
+                              wordBreak:"keep-all" }}>
+                              {r.문의내용||"-"}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize:11, fontWeight:600, color:"#57606a",
+                              textTransform:"uppercase", letterSpacing:"0.4px", marginBottom:5 }}>
+                              처리내용
+                            </div>
+                            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6,
+                              wordBreak:"keep-all" }}>
+                              {r.처리내용||"-"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </>
             );
           })}
         </tbody>
