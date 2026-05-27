@@ -171,7 +171,7 @@ function PendingTable({ records }) {
             <TH c="우선순위" w="62px"/>
             <TH c="문의일자" w="82px"/>
             <TH c="문의유형" w="90px"/>
-            <TH c="문의업체" w="80px"/>
+            <TH c="업체명" w="80px"/>
             <TH c="제품명"/>
             <TH c="문의약사" w="72px"/>
             <TH c="채널" w="64px"/>
@@ -213,7 +213,7 @@ function PendingTable({ records }) {
                   </td>
                   <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11,
                     overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                    {r.문의업체||"-"}
+                    {r.업체명||"-"}
                   </td>
                   <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11,
                     overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
