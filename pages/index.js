@@ -155,14 +155,15 @@ function PendingTable({ records }) {
     </div>
   );
 
+  const COL_W = { "우선순위":"58px", "문의일자":"82px", "문의유형":"88px", "문의내용":"22%", "처리내용":"22%", "문의약사":"72px", "채널":"72px", "진행상황":"72px" };
   const TH = ({ c }) => (
     <th style={{ textAlign:"left", padding:"7px 10px", color:"#57606a", fontWeight:500,
-      fontSize:11, borderBottom:"1px solid #d0d7de", whiteSpace:"nowrap" }}>{c}</th>
+      fontSize:11, borderBottom:"1px solid #d0d7de", whiteSpace:"nowrap", width:COL_W[c] }}>{c}</th>
   );
 
   return (
     <div style={{ overflowX:"auto" }}>
-      <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+      <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, tableLayout:"fixed" }}>
         <thead><tr>{["우선순위","문의일자","문의유형","문의내용","처리내용","문의약사","채널","진행상황"].map(c=><TH key={c} c={c}/>)}</tr></thead>
         <tbody>
           {rows.map((r, i) => {
@@ -183,12 +184,10 @@ function PendingTable({ records }) {
                   <span style={{ padding:"2px 7px", borderRadius:4, fontSize:11,
                     background:`${tc}22`, color:tc }}>{ty}</span>
                 </td>
-                <td style={{ padding:"8px 10px", maxWidth:160, overflow:"hidden",
-                  textOverflow:"ellipsis", whiteSpace:"nowrap", color:"#1f2328" }} title={r.문의내용}>
+                <td style={{ padding:"8px 10px", color:"#1f2328", wordBreak:"keep-all", lineHeight:1.5 }}>
                   {r.문의내용||"-"}
                 </td>
-                <td style={{ padding:"8px 10px", maxWidth:160, overflow:"hidden",
-                  textOverflow:"ellipsis", whiteSpace:"nowrap", color:"#1f2328" }} title={r.처리내용}>
+                <td style={{ padding:"8px 10px", color:"#1f2328", wordBreak:"keep-all", lineHeight:1.5 }}>
                   {r.처리내용||"-"}
                 </td>
                 <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11, whiteSpace:"nowrap" }}>
