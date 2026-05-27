@@ -168,14 +168,14 @@ function PendingTable({ records }) {
         <thead>
           <tr>
             <TH c="" w="32px"/>
-            <TH c="우선순위" w="62px"/>
-            <TH c="문의일자" w="82px"/>
-            <TH c="문의유형" w="90px"/>
-            <TH c="업체명" w="80px"/>
-            <TH c="제품명"/>
-            <TH c="문의약사" w="72px"/>
-            <TH c="채널" w="64px"/>
-            <TH c="진행상황" w="72px"/>
+            <TH c="우선순위" w="68px"/>
+            <TH c="문의일자" w="88px"/>
+            <TH c="문의유형" w="100px"/>
+            <TH c="업체명" w="11%"/>
+            <TH c="제품명" w="14%"/>
+            <TH c="문의약사" w="80px"/>
+            <TH c="채널" w="72px"/>
+            <TH c="진행상황" w="78px"/>
           </tr>
         </thead>
         <tbody>
@@ -253,6 +253,126 @@ function PendingTable({ records }) {
                             </div>
                             <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6,
                               wordBreak:"keep-all" }}>
+                              {r.처리내용||"-"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+
+// ── 처리 완료 테이블 ────────────────────────────────
+function DoneTable({ records }) {
+  const [openIdx, setOpenIdx] = useState(null);
+
+  const rows = records
+    .filter(r => r.진행상황 === "완료")
+    .sort((a, b) => (b.문의일자||"").localeCompare(a.문의일자||""))
+    .slice(0, 20);
+
+  if (!rows.length) return (
+    <div style={{ padding:"24px 0", textAlign:"center", color:"#57606a", fontSize:13 }}>
+      완료된 문의가 없어요.
+    </div>
+  );
+
+  const TH = ({ c, w }) => (
+    <th style={{ textAlign:"left", padding:"7px 10px", color:"#57606a", fontWeight:500,
+      fontSize:11, borderBottom:"1px solid #d0d7de", whiteSpace:"nowrap", width:w }}>{c}</th>
+  );
+
+  return (
+    <div style={{ overflowX:"auto" }}>
+      <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, tableLayout:"fixed" }}>
+        <thead>
+          <tr>
+            <TH c="" w="32px"/>
+            <TH c="문의일자" w="88px"/>
+            <TH c="문의유형" w="100px"/>
+            <TH c="업체명" w="11%"/>
+            <TH c="제품명" w="14%"/>
+            <TH c="문의약사" w="80px"/>
+            <TH c="채널" w="72px"/>
+            <TH c="우선순위" w="68px"/>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => {
+            const ty   = r.문의유형 || "-";
+            const tc   = TYPE_CFG[ty] || "#57606a";
+            const pc   = PRI_CFG[r.우선순위] || "#57606a";
+            const isOpen = openIdx === i;
+            return (
+              <>
+                <tr key={`done-row-${i}`}
+                  onClick={() => setOpenIdx(isOpen ? null : i)}
+                  style={{ borderBottom: isOpen ? "none" : "1px solid #eaeef2",
+                    cursor:"pointer", background: isOpen ? "#f6f8fa" : "transparent" }}>
+                  <td style={{ padding:"8px 10px", textAlign:"center", color:"#57606a" }}>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                      style={{ transition:"transform 0.15s",
+                        transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                        display:"inline-block" }}>
+                      <path d="M4 2l4 4-4 4" stroke="#57606a" strokeWidth="1.5"
+                        strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", whiteSpace:"nowrap" }}>
+                    {r.문의일자?.substring(0,10)||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px", whiteSpace:"nowrap" }}>
+                    <span style={{ padding:"2px 7px", borderRadius:4, fontSize:11,
+                      background:`${tc}22`, color:tc }}>{ty}</span>
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11,
+                    overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                    {r.업체명||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11,
+                    overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                    {r.제품명||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11, whiteSpace:"nowrap" }}>
+                    {(r.문의약사||[]).join(", ")||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px", color:"#57606a", fontSize:11, whiteSpace:"nowrap" }}>
+                    {(r.문의채널||[]).join(", ")||"-"}
+                  </td>
+                  <td style={{ padding:"8px 10px", whiteSpace:"nowrap" }}>
+                    <span style={{ color:pc, fontWeight:600 }}>{r.우선순위||"-"}</span>
+                  </td>
+                </tr>
+                {isOpen && (
+                  <tr key={`done-detail-${i}`} style={{ borderBottom:"1px solid #eaeef2" }}>
+                    <td colSpan={8} style={{ padding:0 }}>
+                      <div style={{ padding:"12px 14px 14px 42px",
+                        background:"#f6f8fa", borderTop:"1px solid #eaeef2" }}>
+                        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                          <div>
+                            <div style={{ fontSize:11, fontWeight:600, color:"#57606a",
+                              textTransform:"uppercase", letterSpacing:"0.4px", marginBottom:5 }}>
+                              문의내용
+                            </div>
+                            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6, wordBreak:"keep-all" }}>
+                              {r.문의내용||"-"}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize:11, fontWeight:600, color:"#57606a",
+                              textTransform:"uppercase", letterSpacing:"0.4px", marginBottom:5 }}>
+                              처리내용
+                            </div>
+                            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6, wordBreak:"keep-all" }}>
                               {r.처리내용||"-"}
                             </div>
                           </div>
@@ -416,6 +536,16 @@ export default function Home() {
                 <span style={{ fontSize:11, color:"#57606a" }}>우선순위 높은 순 · 최대 12건</span>
               </div>
               <PendingTable records={data.records}/>
+            </div>
+
+            {/* 처리 완료 테이블 */}
+            <div style={{ ...card, marginTop:12 }}>
+              <div style={{ display:"flex", justifyContent:"space-between",
+                alignItems:"center", marginBottom:14 }}>
+                <div style={title}>처리 완료 문의 목록</div>
+                <span style={{ fontSize:11, color:"#57606a" }}>최근 순 · 최대 20건</span>
+              </div>
+              <DoneTable records={data.records}/>
             </div>
           </>
         )}
