@@ -426,7 +426,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>PB 약사님 공동구매팀 문의현황 대시보드</title>
+        <title>PB 약사님 커뮤니케이션팀 문의현황 대시보드</title>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"/>
       </Head>
@@ -441,7 +441,7 @@ export default function Home() {
           <div>
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
               <div style={{ fontSize:19, fontWeight:700, letterSpacing:"-0.5px", color:"#1f2328" }}>
-                💬 PB 약사님 공동구매팀 문의현황 대시보드
+                💬 PB 약사님 커뮤니케이션팀 문의현황 대시보드
               </div>
               <span style={{ fontSize:11, fontWeight:500, color:"#57606a",
                 background:"#eaeef2", borderRadius:20, padding:"2px 9px",
