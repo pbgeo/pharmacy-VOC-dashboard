@@ -426,7 +426,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>약사 문의 현황 대시보드</title>
+        <title>PB 약사님 공동구매팀 문의현황 대시보드</title>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"/>
       </Head>
@@ -439,8 +439,15 @@ export default function Home() {
         {/* Header */}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
           <div>
-            <div style={{ fontSize:19, fontWeight:700, letterSpacing:"-0.5px", color:"#1f2328" }}>
-              💬 약사 문의 현황 대시보드
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ fontSize:19, fontWeight:700, letterSpacing:"-0.5px", color:"#1f2328" }}>
+                💬 PB 약사님 공동구매팀 문의현황 대시보드
+              </div>
+              <span style={{ fontSize:11, fontWeight:500, color:"#57606a",
+                background:"#eaeef2", borderRadius:20, padding:"2px 9px",
+                whiteSpace:"nowrap", letterSpacing:"0.2px" }}>
+                v1.3 · 2026-05-28
+              </span>
             </div>
             <div style={{ fontSize:12, color:"#57606a", marginTop:3, fontFamily:"monospace" }}>
               {updated
