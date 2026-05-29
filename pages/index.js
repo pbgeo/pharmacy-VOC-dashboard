@@ -535,6 +535,7 @@ export default function Home() {
         color:"#1f2328", minHeight:"100vh", padding:"16px" }}>
         <style>{`
           * { box-sizing: border-box; margin: 0; padding: 0; }
+          body, div, span, td, th, button { font-weight: 500; }
           @keyframes spin { to { transform: rotate(360deg); } }
 
           .kpi-grid {
@@ -587,7 +588,7 @@ export default function Home() {
               <span style={{ fontSize:11, fontWeight:500, color:"#57606a",
                 background:"#eaeef2", borderRadius:20, padding:"2px 9px",
                 whiteSpace:"nowrap", letterSpacing:"0.2px" }}>
-                v1.3 · 2026-05-28
+                v1.4 · 2026-05-29
               </span>
             </div>
             <div style={{ fontSize:12, color:"#57606a", marginTop:4, fontFamily:"monospace" }}>
@@ -695,10 +696,4 @@ export default function Home() {
                 <span style={{ fontSize:11, color:"#57606a" }}>최근 순 · 최대 20건</span>
               </div>
               <DoneTable records={data.records}/>
-            </div>
-          </>
-        )}
-      </div>
-    </>
-  );
-}
+        
