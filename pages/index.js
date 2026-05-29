@@ -28,6 +28,18 @@ const CH_COLOR = {
   "전화":     "#57606a",
 };
 
+// ── 모바일 감지 훅 ────────────────────────────────
+function useMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+}
+
 // ── 데이터 처리 ────────────────────────────────────
 function processData(records) {
   const statusCounts = {}, typeCounts = {}, channelCounts = {}, priCounts = {}, pharmaCounts = {};
@@ -54,14 +66,14 @@ function processData(records) {
     total, done, pending, high,
     rate: total ? Math.round((done / total) * 100) : 0,
     statusCounts, typeCounts, channelCounts,
-    channelData:  Object.entries(channelCounts).sort((a,b) => b[1]-a[1]),
-    typeData:     Object.entries(typeCounts).sort((a,b) => b[1]-a[1]),
+    channelData:    Object.entries(channelCounts).sort((a,b) => b[1]-a[1]),
+    typeData:       Object.entries(typeCounts).sort((a,b) => b[1]-a[1]),
     pharmacistData: Object.entries(pharmaCounts).sort((a,b) => b[1]-a[1]).slice(0, 8),
     records,
   };
 }
 
-// ── 컴포넌트 ────────────────────────────────────────
+// ── KPI 카드 ──────────────────────────────────────
 function KPI({ label, value, sub, accent, alert }) {
   return (
     <div style={{ background:"#ffffff", border:`1px solid ${alert?"rgba(207,34,46,0.45)":"#d0d7de"}`,
@@ -75,6 +87,7 @@ function KPI({ label, value, sub, accent, alert }) {
   );
 }
 
+// ── 도넛 차트 ────────────────────────────────────
 function Donut({ counts, colorMap, total, label }) {
   const keys  = Object.keys(counts).filter(k => counts[k] > 0);
   const r = 46, cx = 60, cy = 60, sw = 13;
@@ -87,7 +100,7 @@ function Donut({ counts, colorMap, total, label }) {
     return s;
   });
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+    <div style={{ display:"flex", alignItems:"center", gap:16, flexWrap:"wrap" }}>
       <svg width={120} height={120} viewBox="0 0 120 120" style={{ flexShrink:0 }}>
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="#eaeef2" strokeWidth={sw}/>
         {slices.map(s => (
@@ -99,7 +112,7 @@ function Donut({ counts, colorMap, total, label }) {
         <text x={cx} y={cy-6}  textAnchor="middle" fill="#1f2328" fontSize={20} fontWeight={700} fontFamily="monospace">{total}</text>
         <text x={cx} y={cy+12} textAnchor="middle" fill="#57606a" fontSize={10}>{label}</text>
       </svg>
-      <div style={{ flex:1, minWidth:0 }}>
+      <div style={{ flex:1, minWidth:120 }}>
         {keys.map(k => (
           <div key={k} style={{ display:"flex", justifyContent:"space-between",
             padding:"5px 0", borderBottom:"1px solid #eaeef2", fontSize:12 }}>
@@ -121,6 +134,7 @@ function Donut({ counts, colorMap, total, label }) {
   );
 }
 
+// ── 바 차트 ──────────────────────────────────────
 function Bars({ data, colorMap, defaultColor }) {
   if (!data.length) return <div style={{ color:"#57606a", fontSize:12 }}>데이터 없음</div>;
   const max = data[0][1];
@@ -140,8 +154,77 @@ function Bars({ data, colorMap, defaultColor }) {
   );
 }
 
+// ── 모바일 카드형 행 ──────────────────────────────
+function MobileCard({ r, showStatus }) {
+  const [open, setOpen] = useState(false);
+  const st   = r.진행상황 || "-";
+  const sCfg = STATUS_CFG[st] || { bg:"#eaeef2", text:"#57606a" };
+  const ty   = r.문의유형  || "-";
+  const tc   = TYPE_CFG[ty] || "#57606a";
+  const pc   = PRI_CFG[r.우선순위] || "#57606a";
+
+  return (
+    <div style={{ borderBottom:"1px solid #eaeef2", padding:"12px 4px" }}>
+      <div onClick={() => setOpen(!open)} style={{ cursor:"pointer" }}>
+        {/* 첫 줄: 우선순위 + 날짜 + 상태 */}
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6, flexWrap:"wrap" }}>
+          {r.우선순위 && (
+            <span style={{ fontWeight:600, fontSize:12, color:pc }}>{r.우선순위}</span>
+          )}
+          <span style={{ fontSize:11, color:"#57606a", fontFamily:"monospace" }}>
+            {r.문의일자?.substring(0,10)||"-"}
+          </span>
+          <span style={{ flex:1 }}/>
+          {showStatus ? (
+            <span style={{ padding:"2px 8px", borderRadius:20, fontSize:11,
+              fontWeight:500, background:sCfg.bg, color:sCfg.text }}>{st}</span>
+          ) : (
+            r.우선순위 && <span style={{ color:pc, fontWeight:600, fontSize:12 }}>{r.우선순위}</span>
+          )}
+        </div>
+        {/* 두 번째 줄: 문의유형 + 약사 + 채널 */}
+        <div style={{ display:"flex", alignItems:"center", gap:7, flexWrap:"wrap" }}>
+          <span style={{ padding:"2px 7px", borderRadius:4, fontSize:11,
+            background:`${tc}22`, color:tc }}>{ty}</span>
+          <span style={{ fontSize:12, color:"#57606a" }}>
+            {(r.문의약사||[]).join(", ")||"-"}
+          </span>
+          <span style={{ fontSize:11, color:"#a0aab4" }}>
+            {(r.문의채널||[]).join(", ")||""}
+          </span>
+          <span style={{ marginLeft:"auto", fontSize:11, color:"#57606a" }}>
+            {open ? "▲" : "▼"}
+          </span>
+        </div>
+      </div>
+      {/* 펼침: 문의내용 + 처리내용 */}
+      {open && (
+        <div style={{ marginTop:10, padding:"10px 12px", background:"#f6f8fa",
+          borderRadius:8, display:"flex", flexDirection:"column", gap:10 }}>
+          <div>
+            <div style={{ fontSize:10, fontWeight:600, color:"#57606a",
+              textTransform:"uppercase", letterSpacing:"0.4px", marginBottom:4 }}>문의내용</div>
+            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6, wordBreak:"keep-all" }}>
+              {r.문의내용||"-"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize:10, fontWeight:600, color:"#57606a",
+              textTransform:"uppercase", letterSpacing:"0.4px", marginBottom:4 }}>처리내용</div>
+            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6, wordBreak:"keep-all" }}>
+              {r.처리내용||"-"}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── 미처리 테이블 ─────────────────────────────────
 function PendingTable({ records }) {
   const [openIdx, setOpenIdx] = useState(null);
+  const isMobile = useMobile();
 
   const rows = records
     .filter(r => r.진행상황 !== "완료")
@@ -157,6 +240,16 @@ function PendingTable({ records }) {
     </div>
   );
 
+  // 모바일: 카드형
+  if (isMobile) {
+    return (
+      <div>
+        {rows.map((r, i) => <MobileCard key={i} r={r} showStatus={true} />)}
+      </div>
+    );
+  }
+
+  // 데스크톱: 테이블형
   const TH = ({ c, w }) => (
     <th style={{ textAlign:"left", padding:"7px 10px", color:"#57606a", fontWeight:500,
       fontSize:11, borderBottom:"1px solid #d0d7de", whiteSpace:"nowrap", width:w }}>{c}</th>
@@ -241,8 +334,7 @@ function PendingTable({ records }) {
                               textTransform:"uppercase", letterSpacing:"0.4px", marginBottom:5 }}>
                               문의내용
                             </div>
-                            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6,
-                              wordBreak:"keep-all" }}>
+                            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6, wordBreak:"keep-all" }}>
                               {r.문의내용||"-"}
                             </div>
                           </div>
@@ -251,8 +343,7 @@ function PendingTable({ records }) {
                               textTransform:"uppercase", letterSpacing:"0.4px", marginBottom:5 }}>
                               처리내용
                             </div>
-                            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6,
-                              wordBreak:"keep-all" }}>
+                            <div style={{ fontSize:13, color:"#1f2328", lineHeight:1.6, wordBreak:"keep-all" }}>
                               {r.처리내용||"-"}
                             </div>
                           </div>
@@ -270,10 +361,10 @@ function PendingTable({ records }) {
   );
 }
 
-
-// ── 처리 완료 테이블 ────────────────────────────────
+// ── 처리 완료 테이블 ──────────────────────────────
 function DoneTable({ records }) {
   const [openIdx, setOpenIdx] = useState(null);
+  const isMobile = useMobile();
 
   const rows = records
     .filter(r => r.진행상황 === "완료")
@@ -286,6 +377,16 @@ function DoneTable({ records }) {
     </div>
   );
 
+  // 모바일: 카드형
+  if (isMobile) {
+    return (
+      <div>
+        {rows.map((r, i) => <MobileCard key={i} r={r} showStatus={false} />)}
+      </div>
+    );
+  }
+
+  // 데스크톱: 테이블형
   const TH = ({ c, w }) => (
     <th style={{ textAlign:"left", padding:"7px 10px", color:"#57606a", fontWeight:500,
       fontSize:11, borderBottom:"1px solid #d0d7de", whiteSpace:"nowrap", width:w }}>{c}</th>
@@ -421,7 +522,6 @@ export default function Home() {
   const card  = { background:"#ffffff", border:"1px solid #d0d7de", borderRadius:10, padding:18 };
   const title = { fontSize:11, fontWeight:600, color:"#57606a", textTransform:"uppercase",
     letterSpacing:"0.5px", marginBottom:14 };
-  const g2    = { display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 };
 
   return (
     <>
@@ -432,15 +532,56 @@ export default function Home() {
       </Head>
 
       <div style={{ fontFamily:"'Noto Sans KR', sans-serif", background:"#ffffff",
-        color:"#1f2328", minHeight:"100vh", padding:"20px" }}>
-        <style>{`* { box-sizing: border-box; margin: 0; padding: 0; }
-          @keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        color:"#1f2328", minHeight:"100vh", padding:"16px" }}>
+        <style>{`
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          @keyframes spin { to { transform: rotate(360deg); } }
+
+          .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 14px;
+          }
+          .two-col-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+          }
+          .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            gap: 12px;
+          }
+
+          @media (max-width: 639px) {
+            .kpi-grid {
+              grid-template-columns: repeat(2, 1fr);
+              gap: 8px;
+            }
+            .two-col-grid {
+              grid-template-columns: 1fr;
+              gap: 10px;
+            }
+            .header-row {
+              flex-direction: column;
+              align-items: stretch;
+              margin-bottom: 16px;
+            }
+            .header-row button {
+              align-self: flex-start;
+            }
+          }
+        `}</style>
 
         {/* Header */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
+        <div className="header-row">
           <div>
-            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <div style={{ fontSize:19, fontWeight:700, letterSpacing:"-0.5px", color:"#1f2328" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+              <div style={{ fontSize:17, fontWeight:700, letterSpacing:"-0.5px", color:"#1f2328", lineHeight:1.4 }}>
                 💬 PB 약사님 커뮤니케이션팀 문의현황 대시보드
               </div>
               <span style={{ fontSize:11, fontWeight:500, color:"#57606a",
@@ -449,7 +590,7 @@ export default function Home() {
                 v1.3 · 2026-05-28
               </span>
             </div>
-            <div style={{ fontSize:12, color:"#57606a", marginTop:3, fontFamily:"monospace" }}>
+            <div style={{ fontSize:12, color:"#57606a", marginTop:4, fontFamily:"monospace" }}>
               {updated
                 ? `마지막 업데이트: ${updated.toLocaleString("ko-KR")} · ${data?.total||0}건`
                 : "노션 연동 중..."}
@@ -462,6 +603,7 @@ export default function Home() {
             fontFamily:"'Noto Sans KR', sans-serif",
             cursor:status==="loading"?"not-allowed":"pointer",
             opacity:status==="loading"?0.5:1,
+            whiteSpace:"nowrap",
           }}>
             <svg width={13} height={13} viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth={2.5}
@@ -501,15 +643,15 @@ export default function Home() {
         {status==="done" && data && (
           <>
             {/* KPI */}
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:14 }}>
-              <KPI label="총 문의"          value={data.total}   sub="전체 인입"        accent="#0969da"/>
-              <KPI label="🔴 높음 우선순위" value={data.high}    sub="즉시 처리 필요"  accent="#cf222e" alert={data.high>0}/>
-              <KPI label="미처리"           value={data.pending} sub="문의인입 상태"    accent="#c05c00"/>
-              <KPI label={`처리율 ${data.rate}%`} value={data.done} sub="완료 건수"   accent="#1a7f37"/>
+            <div className="kpi-grid">
+              <KPI label="총 문의"          value={data.total}   sub="전체 인입"       accent="#0969da"/>
+              <KPI label="🔴 높음 우선순위" value={data.high}    sub="즉시 처리 필요" accent="#cf222e" alert={data.high>0}/>
+              <KPI label="미처리"           value={data.pending} sub="문의인입 상태"   accent="#c05c00"/>
+              <KPI label={`처리율 ${data.rate}%`} value={data.done} sub="완료 건수"  accent="#1a7f37"/>
             </div>
 
             {/* 문의유형 + 진행상황 */}
-            <div style={{ ...g2, marginBottom:12 }}>
+            <div className="two-col-grid">
               <div style={card}>
                 <div style={title}>문의 유형별 분포</div>
                 <Donut counts={data.typeCounts} colorMap={TYPE_CFG}
@@ -524,7 +666,7 @@ export default function Home() {
             </div>
 
             {/* 채널 + 약사 */}
-            <div style={{ ...g2, marginBottom:12 }}>
+            <div className="two-col-grid">
               <div style={card}>
                 <div style={title}>문의 채널</div>
                 <Bars data={data.channelData} colorMap={CH_COLOR} defaultColor="#0969da"/>
