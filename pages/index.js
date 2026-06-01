@@ -14,6 +14,8 @@ const TYPE_CFG = {
   "정산·수수료":    "#1a7f37",
   "이벤트":         "#bf3989",
   "콘텐츠·가이드":  "#8250df",
+  "제품문의":       "#d4a017",
+  "소비자VOC":      "#0891b2",
   "기타":           "#57606a",
 };
 const PRI_CFG = {
@@ -112,21 +114,17 @@ function Donut({ counts, colorMap, total, label }) {
         <text x={cx} y={cy-6}  textAnchor="middle" fill="#1f2328" fontSize={20} fontWeight={700} fontFamily="monospace">{total}</text>
         <text x={cx} y={cy+12} textAnchor="middle" fill="#57606a" fontSize={10}>{label}</text>
       </svg>
-      <div style={{ flex:1, minWidth:120 }}>
+      <div style={{ minWidth:0 }}>
         {keys.map(k => (
-          <div key={k} style={{ display:"flex", justifyContent:"space-between",
+          <div key={k} style={{ display:"flex", alignItems:"center", gap:8,
             padding:"5px 0", borderBottom:"1px solid #eaeef2", fontSize:12 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:7, minWidth:0 }}>
-              <div style={{ width:7, height:7, borderRadius:"50%",
-                background:colorMap[k]||"#57606a", flexShrink:0 }}/>
-              <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", color:"#1f2328" }}>{k}</span>
-            </div>
-            <div style={{ flexShrink:0, marginLeft:8 }}>
-              <span style={{ fontFamily:"monospace", fontWeight:600, color:"#1f2328" }}>{counts[k]}</span>
-              <span style={{ fontSize:10, color:"#57606a", marginLeft:3 }}>
-                {Math.round(((counts[k]||0)/total)*100)}%
-              </span>
-            </div>
+            <div style={{ width:7, height:7, borderRadius:"50%",
+              background:colorMap[k]||"#57606a", flexShrink:0 }}/>
+            <span style={{ color:"#1f2328", whiteSpace:"nowrap" }}>{k}</span>
+            <span style={{ fontFamily:"monospace", fontWeight:600, color:"#1f2328", whiteSpace:"nowrap" }}>{counts[k]}</span>
+            <span style={{ fontSize:10, color:"#57606a", whiteSpace:"nowrap" }}>
+              {Math.round(((counts[k]||0)/total)*100)}%
+            </span>
           </div>
         ))}
       </div>
@@ -588,7 +586,7 @@ export default function Home() {
               <span style={{ fontSize:11, fontWeight:500, color:"#57606a",
                 background:"#eaeef2", borderRadius:20, padding:"2px 9px",
                 whiteSpace:"nowrap", letterSpacing:"0.2px" }}>
-                v1.4 · 2026-05-29
+                v1.5 · 2026-06-01
               </span>
             </div>
             <div style={{ fontSize:12, color:"#57606a", marginTop:4, fontFamily:"monospace" }}>
@@ -696,4 +694,11 @@ export default function Home() {
                 <span style={{ fontSize:11, color:"#57606a" }}>최근 순 · 최대 20건</span>
               </div>
               <DoneTable records={data.records}/>
-        
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+                                                                                           
