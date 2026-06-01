@@ -114,15 +114,17 @@ function Donut({ counts, colorMap, total, label }) {
         <text x={cx} y={cy-6}  textAnchor="middle" fill="#1f2328" fontSize={20} fontWeight={700} fontFamily="monospace">{total}</text>
         <text x={cx} y={cy+12} textAnchor="middle" fill="#57606a" fontSize={10}>{label}</text>
       </svg>
-      <div style={{ minWidth:0 }}>
+      <div style={{ minWidth:0, flex:1 }}>
         {keys.map(k => (
-          <div key={k} style={{ display:"flex", alignItems:"center", gap:8,
+          <div key={k} style={{ display:"flex", alignItems:"center", gap:6,
             padding:"5px 0", borderBottom:"1px solid #eaeef2", fontSize:12 }}>
             <div style={{ width:7, height:7, borderRadius:"50%",
               background:colorMap[k]||"#57606a", flexShrink:0 }}/>
-            <span style={{ color:"#1f2328", whiteSpace:"nowrap" }}>{k}</span>
-            <span style={{ fontFamily:"monospace", fontWeight:600, color:"#1f2328", whiteSpace:"nowrap" }}>{counts[k]}</span>
-            <span style={{ fontSize:10, color:"#57606a", whiteSpace:"nowrap" }}>
+            <span style={{ flex:1, color:"#1f2328" }}>{k}</span>
+            <span style={{ fontFamily:"monospace", fontWeight:600, color:"#1f2328",
+              width:18, textAlign:"right", flexShrink:0 }}>{counts[k]}</span>
+            <span style={{ fontSize:11, color:"#57606a",
+              width:36, textAlign:"right", flexShrink:0 }}>
               {Math.round(((counts[k]||0)/total)*100)}%
             </span>
           </div>
@@ -586,7 +588,7 @@ export default function Home() {
               <span style={{ fontSize:11, fontWeight:500, color:"#57606a",
                 background:"#eaeef2", borderRadius:20, padding:"2px 9px",
                 whiteSpace:"nowrap", letterSpacing:"0.2px" }}>
-                v1.5 · 2026-06-01
+                v1.6 · 2026-06-01
               </span>
             </div>
             <div style={{ fontSize:12, color:"#57606a", marginTop:4, fontFamily:"monospace" }}>
@@ -701,4 +703,4 @@ export default function Home() {
     </>
   );
 }
-                                                                                           
+                        
