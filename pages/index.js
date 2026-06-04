@@ -43,8 +43,19 @@ function useMobile() {
 }
 
 // ── 데이터 처리 ────────────────────────────────────
+function getWeekLabel(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return null;
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day; // Monday
+  const mon = new Date(d);
+  mon.setDate(d.getDate() + diff);
+  return `${mon.getMonth()+1}/${mon.getDate()}주`;
+}
+
 function processData(records) {
-  const statusCounts = {}, typeCounts = {}, channelCounts = {}, priCounts = {}, pharmaCounts = {};
+  const statusCounts = {}, typeCounts = {}, channelCounts = {}, priCounts = {}, pharmaCounts = {}, weekCounts = {};
 
   records.forEach(r => {
     const st  = r.진행상황 || "미지정";
@@ -57,7 +68,18 @@ function processData(records) {
 
     (r.문의채널 || []).forEach(c => { channelCounts[c] = (channelCounts[c] || 0) + 1; });
     (r.문의약사 || []).forEach(p => { pharmaCounts[p]  = (pharmaCounts[p]  || 0) + 1; });
+
+    const wk = getWeekLabel(r.문의일자);
+    if (wk) weekCounts[wk] = (weekCounts[wk] || 0) + 1;
   });
+
+  // 주별 데이터: 날짜순 정렬, 최근 8주
+  const weeklyData = Object.entries(weekCounts)
+    .sort((a, b) => {
+      const toDate = s => { const [m,d] = s.replace("주","").split("/"); return m*100+parseInt(d); };
+      return toDate(a[0]) - toDate(b[0]);
+    })
+    .slice(-8);
 
   const total   = records.length;
   const done    = statusCounts["완료"]    || 0;
@@ -71,6 +93,7 @@ function processData(records) {
     channelData:    Object.entries(channelCounts).sort((a,b) => b[1]-a[1]),
     typeData:       Object.entries(typeCounts).sort((a,b) => b[1]-a[1]),
     pharmacistData: Object.entries(pharmaCounts).sort((a,b) => b[1]-a[1]).slice(0, 8),
+    weeklyData,
     records,
   };
 }
@@ -85,6 +108,38 @@ function KPI({ label, value, sub, accent, alert }) {
         textTransform:"uppercase", marginBottom:7 }}>{label}</div>
       <div style={{ fontSize:30, fontWeight:700, fontFamily:"monospace", lineHeight:1, color:accent }}>{value}</div>
       <div style={{ fontSize:11, color:"#57606a", marginTop:5 }}>{sub}</div>
+    </div>
+  );
+}
+
+// ── 주별 추이 차트 ────────────────────────────────
+function WeeklyTrend({ data }) {
+  if (!data || !data.length) return (
+    <div style={{ color:"#57606a", fontSize:12, padding:"20px 0", textAlign:"center" }}>데이터 없음</div>
+  );
+  const max = Math.max(...data.map(d => d[1]), 1);
+  const BAR_H = 120;
+
+  return (
+    <div style={{ display:"flex", alignItems:"flex-end", gap:8, height: BAR_H + 36, paddingTop:8 }}>
+      {data.map(([label, val]) => (
+        <div key={label} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+          {/* 숫자 */}
+          <div style={{ fontSize:11, fontWeight:600, color:"#0969da", fontFamily:"monospace" }}>{val}</div>
+          {/* 바 */}
+          <div style={{ width:"100%", display:"flex", alignItems:"flex-end", height: BAR_H - 20 }}>
+            <div style={{
+              width:"100%",
+              height: `${Math.max((val / max) * 100, 4)}%`,
+              background: "linear-gradient(to top, #0969da, #58a6ff)",
+              borderRadius:"4px 4px 0 0",
+              transition:"height .4s"
+            }}/>
+          </div>
+          {/* 라벨 */}
+          <div style={{ fontSize:10, color:"#57606a", textAlign:"center", whiteSpace:"nowrap" }}>{label}</div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -588,7 +643,7 @@ export default function Home() {
               <span style={{ fontSize:11, fontWeight:500, color:"#57606a",
                 background:"#eaeef2", borderRadius:20, padding:"2px 9px",
                 whiteSpace:"nowrap", letterSpacing:"0.2px" }}>
-                v1.6 · 2026-06-01
+                v1.7 · 2026-06-04
               </span>
             </div>
             <div style={{ fontSize:12, color:"#57606a", marginTop:4, fontFamily:"monospace" }}>
@@ -678,6 +733,15 @@ export default function Home() {
               </div>
             </div>
 
+            {/* 주별 문의 추이 */}
+            <div style={{ ...card, marginBottom:12 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+                <div style={title}>주별 문의 추이</div>
+                <span style={{ fontSize:11, color:"#57606a" }}>최근 8주</span>
+              </div>
+              <WeeklyTrend data={data.weeklyData}/>
+            </div>
+
             {/* 미처리 테이블 */}
             <div style={card}>
               <div style={{ display:"flex", justifyContent:"space-between",
@@ -703,4 +767,3 @@ export default function Home() {
     </>
   );
 }
-                        
